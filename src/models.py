@@ -26,11 +26,11 @@ class Character(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    gender: Mapped[str] = mapped_column(String(20))
-    birth_year: Mapped[str] = mapped_column(String(20))
-    eye_color: Mapped[str] = mapped_column(String(20))
-    hair_color: Mapped[str] = mapped_column(String(20))
-    height: Mapped[str] = mapped_column(String(20))
+    gender: Mapped[str] = mapped_column(String(20), nullable=True)
+    birth_year: Mapped[str] = mapped_column(String(20), nullable=True)
+    eye_color: Mapped[str] = mapped_column(String(20), nullable=True)
+    hair_color: Mapped[str] = mapped_column(String(20), nullable=True)
+    height: Mapped[str] = mapped_column(String(20), nullable=True)
 
     favorites: Mapped[list["Favorite"]] = relationship(back_populates="character")
 
@@ -68,22 +68,20 @@ class Planet(db.Model):
         }
 
 class Favorite(db.Model):
-    __tablename__ = "favorite"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    planet_id = db.Column(db.Integer, db.ForeignKey('planet.id'), nullable=True)
+    character_id = db.Column(db.Integer, db.ForeignKey('character.id'), nullable=True)
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    character_id: Mapped[int | None] = mapped_column(ForeignKey("character.id"))
-    planet_id: Mapped[int | None] = mapped_column(ForeignKey("planet.id"))
-
-    user: Mapped["User"] = relationship(back_populates="favorites")
-    character: Mapped["Character"] = relationship(back_populates="favorites")
-    planet: Mapped["Planet"] = relationship(back_populates="favorites")
+    user = db.relationship('User', back_populates='favorites')
+    planet = db.relationship('Planet')
+    character = db.relationship('Character')
 
 
     def serialize(self):
         return {
             "id": self.id,
             "user_id": self.user_id,
-            "character_id": self.character_id,
-            "planet_id": self.planet_id,
-        }
+            "planet": self.planet.name if self.planet else None,
+            "character": self.character.name if self.character else None
+    }
