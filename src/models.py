@@ -14,9 +14,6 @@ class User(db.Model):
 
     favorites: Mapped[list["Favorite"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
-    def __repr__(self):
-        return f"<User {self.email}>"
-
     def serialize(self):
         return {
             "id": self.id,
